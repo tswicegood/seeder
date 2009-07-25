@@ -1,0 +1,9 @@
+bin/buildout
+eggs/*
+.*.swp
+.installed.cfg
+bin/django*
+parts/*
+*.pyc
+project/local_settings.py
+
