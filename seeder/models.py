@@ -34,7 +34,7 @@ class Update(models.Model):
 
 class SeededUpdateManager(models.Manager):
     def currently_available(self):
-        return self.filter(pub_date__lte = datetime.now())
+        return self.filter(pub_date__lte = datetime.now(), has_sent = False)
 
 class SeededUpdate(models.Model):
     seeder = models.ForeignKey(Seeder)

@@ -59,6 +59,25 @@ class TestOfSeededUpate(TestCase):
         time.sleep(1.1)
         self.assertEqual(2, len(SeededUpdate.objects.currently_available()))
 
+    def test_retrieves_updates_that_havenot_been_sent(self):
+        first = SeededUpdate.objects.create(
+            seeder = generate_random_seeder(),
+            update = generate_random_update(),
+            pub_date = datetime.now()
+        )
+        second = SeededUpdate.objects.create(
+            seeder = generate_random_seeder(),
+            update = generate_random_update(),
+            pub_date = datetime.now()
+        )
+
+        self.assertEqual(2, len(SeededUpdate.objects.currently_available()))
+
+        first.has_sent = 1;
+        first.save()
+
+        self.assertEqual(1, len(SeededUpdate.objects.currently_available()))
+
     def test_send_calls_on_poster(self):
         update = SeededUpdate.objects.create(
             seeder = generate_random_seeder(),
