@@ -173,5 +173,12 @@ class TestOfSeeder(TestCase):
     def test_automatically_expires_in_30_days(self):
         seeder = generate_random_seeder()
         expected_expires_on = datetime.fromtimestamp(time.time() + 60*60*24*30).date()
-        self.assertEquals(seeder.expires_on.date(), expected_expires_on)
+        self.assertEquals(seeder.expires_on.date(), expected_expires_on,
+            "seeder.expires_on should default to 30 days")
 
+    def test_can_set_by_expires_by_day(self):
+        seeder = generate_random_seeder()
+        seeder.set_expires_on_in_days(7)
+
+        self.assertEquals(seeder.expires_on.date(), datetime.fromtimestamp(time.time() + 60*60*24*7).date(),
+            "seeder.expires_on should be 7 days in the future")

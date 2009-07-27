@@ -5,7 +5,8 @@ from datetime import datetime
 from time import time
 from random import randint as random
 
-THIRTY_DAYS = 60 * 60 * 24 * 30
+SECONDS_IN_A_DAY = 60 * 60 * 24
+THIRTY_DAYS = SECONDS_IN_A_DAY * 30
 
 class AuthorizedAccountManager(models.Manager):
     def default_account(self):
@@ -32,8 +33,11 @@ class Seeder(models.Model):
 
     def save(self, *args, **kwargs):
         if self.expires_on is None:
-            self.expires_on = datetime.fromtimestamp(time() + THIRTY_DAYS)
+            self.set_expires_on_in_days(30)
         super(Seeder, self).save(*args, **kwargs)
+
+    def set_expires_on_in_days(self, days):
+        self.expires_on = datetime.fromtimestamp(time() + (SECONDS_IN_A_DAY * days))
 
 class Token(models.Model):
     seeder = models.ForeignKey(Seeder)
