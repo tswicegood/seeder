@@ -22,11 +22,17 @@ class AuthorizedAccount(models.Model):
     def __unicode__(self):
         return self.user.get_full_name()
 
+class SeederManager(models.Manager):
+    def currently_available(self):
+        return self.filter(expires_on__gte = datetime.now())
+
 class Seeder(models.Model):
     twitter_id = models.CharField(max_length = 100)
     twitter_username = models.CharField(max_length = 100)
     authorized_for = models.ForeignKey(AuthorizedAccount)
     expires_on = models.DateTimeField()
+
+    objects = SeederManager()
 
     def __unicode__(self):
         return self.twitter_username

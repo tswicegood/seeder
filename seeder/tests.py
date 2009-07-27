@@ -169,6 +169,19 @@ class TestOfAuthorizedAccount(TestCase):
         default_account = AuthorizedAccount.objects.default_account()
         self.assertEqual(settings.SEEDER['default_twitter_id'], default_account.twitter_id)
 
+    def test_only_pulls_seeders_that_have_not_expired(self):
+        a = generate_random_authorized_account()
+        s = generate_random_seeder(a)
+
+        self.assertEquals(len(a.seeder_set.currently_available()), 1,
+            "sanity check: seeder_set.currently_available() should be one")
+
+        s.expires_on = datetime.fromtimestamp(time.time() - 60)
+        s.save()
+        self.assertEquals(len(a.seeder_set.currently_available()), 0,
+            "seeder_set.currently_available() should have no seeders")
+
+
 class TestOfSeeder(TestCase):
     def test_automatically_expires_in_30_days(self):
         seeder = generate_random_seeder()
