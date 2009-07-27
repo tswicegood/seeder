@@ -1,4 +1,5 @@
 from django.test import TestCase as DjangoTestCase
+from django.conf import settings
 from seeder.models import *
 from seeder.posters import TwitterPoster
 from random import randint as random
@@ -143,7 +144,11 @@ class TestOfUpdate(TestCase):
 
 
 class TestOfAuthorizedAccount(TestCase):
-    def test_at_water_returns_erins_account(self):
-        at_water = AuthorizedAccount.objects.at_water()
-        self.assertEqual("19673700", at_water.twitter_id)
+    def test_default_account_returns_default_account(self):
+        a = generate_random_authorized_account()
+        a.twitter_id = settings.SEEDER['default_twitter_id']
+        a.save()
+
+        default_account = AuthorizedAccount.objects.default_account()
+        self.assertEqual(settings.SEEDER['default_twitter_id'], default_account.twitter_id)
 

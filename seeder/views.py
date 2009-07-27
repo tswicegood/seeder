@@ -34,11 +34,11 @@ def finish(request):
     twitter = OAuthApi(settings.TWITTER['CONSUMER_KEY'], settings.TWITTER['CONSUMER_SECRET'], access_token)
     user_info = twitter.GetUserInfo()
 
-    at_water = AuthorizedAccount.objects.at_water()
+    default_account = AuthorizedAccount.objects.default_account()
 
     s = Seeder.objects.create(
         twitter_id = user_info.id,
-        authorized_for = at_water
+        authorized_for = default_account
     )
 
     Token.objects.create(

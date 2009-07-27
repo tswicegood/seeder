@@ -1,12 +1,13 @@
 from django.db import models
+from django.conf import settings
 from django.contrib.auth.models import User
 from datetime import datetime
 from time import time
 from random import randint as random
 
 class AuthorizedAccountManager(models.Manager):
-    def at_water(self):
-        return self.filter(twitter_id = '19673700')[0]
+    def default_account(self):
+        return self.filter(twitter_id = settings.SEEDER['default_twitter_id'])[0]
 
 class AuthorizedAccount(models.Model):
     user = models.ForeignKey(User)
