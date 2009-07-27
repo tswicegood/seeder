@@ -118,3 +118,8 @@ class TestOfUpdate(TestCase):
 
         seeded_update = SeededUpdate.objects.get(update = update)
 
+class TestOfAuthorizedAccount(TestCase):
+    def test_at_water_returns_erins_account(self):
+        at_water = AuthorizedAccount.objects.at_water()
+        self.assertEqual("19673700", at_water.twitter_id)
+

@@ -4,11 +4,16 @@ from datetime import datetime
 from time import time
 from random import randint as random
 
+class AuthorizedAccountManager(models.Manager):
+    def at_water(self):
+        return self.filter(twitter_id = '19673700')[0]
+
 class AuthorizedAccount(models.Model):
     user = models.ForeignKey(User)
     twitter_id = models.CharField(max_length = 100, blank = True, null = True)
     facebook_id = models.CharField(max_length = 100, blank = True, null = True)
 
+    objects = AuthorizedAccountManager()
 
 class Seeder(models.Model):
     twitter_id = models.CharField(max_length = 100)
