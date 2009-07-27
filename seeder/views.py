@@ -1,7 +1,8 @@
 from django.conf import settings
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from oauthtwitter import OAuthApi
 from seeder.models import AuthorizedAccount, Token, Seeder
+from datetime import datetime
 
 def index(request):
     return render_to_response(
@@ -9,16 +10,15 @@ def index(request):
     )
 
 def signup(request):
-    oauth = OAuthApi(settings.TWITTER['CONSUMER_KEY'], settings.TWITTER['CONSUMER_SECRET'])
-    request_token = oauth.getRequestToken()
-    request.session['twitter_request_token'] = request_token
-    authorization_url = oauth.getAuthorizationURL(request_token)
-    return render_to_response(
-        'seeder/signup.html',
-        {
-            'authorization_url': authorization_url,
-        }
-    )
+    if request.method == 'POST':
+        oauth = OAuthApi(settings.TWITTER['CONSUMER_KEY'], settings.TWITTER['CONSUMER_SECRET'])
+        request_token = oauth.getRequestToken()
+        request.session['duration'] = request.POST['duration']
+        request.session['twitter_request_token'] = request_token
+        authorization_url = oauth.getAuthorizationURL(request_token)
+        return redirect(authorization_url)
+
+    return render_to_response('seeder/signup.html')
 
 def finish(request):
     # TODO: refactor this out -- should be in a util class or on the model
@@ -32,11 +32,13 @@ def finish(request):
 
     default_account = AuthorizedAccount.objects.default_account()
 
-    s = Seeder.objects.create(
+    s = Seeder(
         twitter_id = user_info.id,
         twitter_username = user_info.screen_name,
         authorized_for = default_account
     )
+    s.set_expires_on_in_days(request.session['duration'])
+    s.save()
 
     Token.objects.create(
         seeder = s,
