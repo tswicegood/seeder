@@ -1,12 +1,8 @@
 from django.conf import settings
 from django.shortcuts import render_to_response
 from oauthtwitter import OAuthApi
-#import oauthtwitter
-#from oauth import oauth
+from seeder.models import AuthorizedAccount, Token, Seeder
 
-#SERVER = getattr(settings, 'OAUTH_SERVER', 'twitter.com')
-#ACCESS_TOKEN_URL = getattr(settings, 'OAUTH_ACCESS_TOKEN_URL', 'https://%s/twitter_app/access_token' % SERVER)
-    
 def index(request):
     return render_to_response(
         'seeder/index.html'
