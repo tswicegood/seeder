@@ -16,9 +16,16 @@ class AuthorizedAccount(models.Model):
 
     objects = AuthorizedAccountManager()
 
+    def __unicode__(self):
+        return self.user.get_full_name()
+
 class Seeder(models.Model):
     twitter_id = models.CharField(max_length = 100)
+    twitter_username = models.CharField(max_length = 100)
     authorized_for = models.ForeignKey(AuthorizedAccount)
+
+    def __unicode__(self):
+        return self.twitter_username
 
 class Token(models.Model):
     seeder = models.ForeignKey(Seeder)

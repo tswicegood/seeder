@@ -34,6 +34,7 @@ def finish(request):
 
     s = Seeder.objects.create(
         twitter_id = user_info.id,
+        twitter_username = user_info.screen_name,
         authorized_for = default_account
     )
 
