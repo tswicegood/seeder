@@ -63,7 +63,7 @@ class Update(models.Model):
             return;
 
         # TODO: queue these up instead of doing them all at save
-        for seeder in self.posted_by.seeder_set.all():
+        for seeder in self.posted_by.seeder_set.currently_available():
             s = SeededUpdate.objects.create(
                 seeder = seeder,
                 update = self

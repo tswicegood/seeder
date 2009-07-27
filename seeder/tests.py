@@ -158,6 +158,18 @@ class TestOfUpdate(TestCase):
         self.assertEqual(len(SeededUpdate.objects.all()), 1,
             "Should only create SeededUpdates on save when new")
 
+    def test_only_creates_for_non_expired_seeders(self):
+        a = generate_random_authorized_account()
+        s1 = generate_random_seeder(a)
+        s2 = generate_random_seeder(a)
+
+        s2.set_expires_on_in_days(-1)
+        s2.save()
+
+        update = generate_random_update(a)
+        self.assertEquals(len(SeededUpdate.objects.all()), 1,
+            "should only create one SeededUpdate since on has expired")
+
 
 
 class TestOfAuthorizedAccount(TestCase):
