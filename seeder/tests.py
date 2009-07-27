@@ -169,3 +169,9 @@ class TestOfAuthorizedAccount(TestCase):
         default_account = AuthorizedAccount.objects.default_account()
         self.assertEqual(settings.SEEDER['default_twitter_id'], default_account.twitter_id)
 
+class TestOfSeeder(TestCase):
+    def test_automatically_expires_in_30_days(self):
+        seeder = generate_random_seeder()
+        expected_expires_on = datetime.fromtimestamp(time.time() + 60*60*24*30).date()
+        self.assertEquals(seeder.expires_on.date(), expected_expires_on)
+

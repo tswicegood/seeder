@@ -5,6 +5,8 @@ from datetime import datetime
 from time import time
 from random import randint as random
 
+THIRTY_DAYS = 60 * 60 * 24 * 30
+
 class AuthorizedAccountManager(models.Manager):
     def default_account(self):
         return self.filter(twitter_id = settings.SEEDER['default_twitter_id'])[0]
@@ -23,9 +25,15 @@ class Seeder(models.Model):
     twitter_id = models.CharField(max_length = 100)
     twitter_username = models.CharField(max_length = 100)
     authorized_for = models.ForeignKey(AuthorizedAccount)
+    expires_on = models.DateTimeField()
 
     def __unicode__(self):
         return self.twitter_username
+
+    def save(self, *args, **kwargs):
+        if self.expires_on is None:
+            self.expires_on = datetime.fromtimestamp(time() + THIRTY_DAYS)
+        super(Seeder, self).save(*args, **kwargs)
 
 class Token(models.Model):
     seeder = models.ForeignKey(Seeder)
