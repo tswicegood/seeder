@@ -70,5 +70,7 @@ class SeededUpdate(models.Model):
 
     def send(self, poster):
         poster.post(self)
+        self.has_sent = True
+        self.save()
 
 

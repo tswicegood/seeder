@@ -28,6 +28,12 @@ def generate_random_update(account = None):
         original_text = "Hello from Seeder!"
     )
 
+def generate_mock_poster(update):
+    poster = mox.MockObject(TwitterPoster)
+    poster.post(update)
+    mox.Replay(poster)
+    return poster
+
 class TestCase(DjangoTestCase):
     def assertPubDateBetween(self, obj, begin, end):
         self.assertTrue(obj.pub_date > begin and obj.pub_date < end)
@@ -87,13 +93,24 @@ class TestOfSeededUpate(TestCase):
             seeder = generate_random_seeder(),
             update = generate_random_update()
         )
-        poster = mox.MockObject(TwitterPoster)
-        poster.post(update)
-        mox.Replay(poster)
-
+        poster = generate_mock_poster(update)
         update.send(poster)
 
         mox.Verify(poster)
+
+    def test_send_marks_updates_as_sent(self):
+        update = SeededUpdate.objects.create(
+            seeder = generate_random_seeder(),
+            update = generate_random_update(),
+            pub_date = datetime.now()
+        )
+
+        self.assertEqual(len(SeededUpdate.objects.currently_available()), 1,
+            "sanity check to ensure value seeded update is present")
+        update.send(generate_mock_poster(update))
+
+        self.assertEqual(len(SeededUpdate.objects.currently_available()), 0,
+            "SeededUpdate should not be available after being sent")
 
 
 class TestOfUpdate(TestCase):
