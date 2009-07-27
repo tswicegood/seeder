@@ -128,6 +128,20 @@ class TestOfUpdate(TestCase):
         end_datetime = datetime.fromtimestamp(time.time() + (60 * 30) + 1)
         self.assertPubDateBetween(seeded_update, begin_datetime, end_datetime)
 
+    def test_only_creates_new_seeded_updates_on_new(self):
+        a = generate_random_authorized_account()
+        generate_random_seeder(a)
+        update = generate_random_update(a)
+
+        self.assertEqual(len(SeededUpdate.objects.all()), 1,
+            "Sanity check")
+
+        update.save()
+        self.assertEqual(len(SeededUpdate.objects.all()), 1,
+            "Should only create SeededUpdates on save when new")
+
+
+
 class TestOfAuthorizedAccount(TestCase):
     def test_at_water_returns_erins_account(self):
         at_water = AuthorizedAccount.objects.at_water()

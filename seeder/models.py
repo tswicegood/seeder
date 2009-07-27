@@ -30,7 +30,12 @@ class Update(models.Model):
     pub_date = models.DateTimeField(auto_now_add = True)
 
     def save(self, *args, **kwargs):
+        is_new = self.id is None
         super(Update, self).save(*args, **kwargs)
+
+        if is_new is False:
+            return;
+
         # TODO: queue these up instead of doing them all at save
         for seeder in self.posted_by.seeder_set.all():
             s = SeededUpdate.objects.create(
