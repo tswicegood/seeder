@@ -15,7 +15,7 @@ def generate_random_seeder(account = None):
     if account is None:
         account = generate_random_authorized_account()
     return Seeder.objects.create(
-        user_id = random(1000, 9999),
+        twitter_id = random(1000, 9999),
         authorized_for = account
     )
 

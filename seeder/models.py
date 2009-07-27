@@ -9,14 +9,15 @@ class AuthorizedAccount(models.Model):
     twitter_id = models.CharField(max_length = 100, blank = True, null = True)
     facebook_id = models.CharField(max_length = 100, blank = True, null = True)
 
-class Token(models.Model):
-    user_id = models.CharField(max_length = 100)
-    oauth_token = models.CharField(max_length = 100)
-    oauth_token_secret = models.CharField(max_length = 100)
 
 class Seeder(models.Model):
-    user_id = models.CharField(max_length = 100)
+    twitter_id = models.CharField(max_length = 100)
     authorized_for = models.ForeignKey(AuthorizedAccount)
+
+class Token(models.Model):
+    seeder = models.ForeignKey(Seeder)
+    oauth_token = models.CharField(max_length = 100)
+    oauth_token_secret = models.CharField(max_length = 100)
 
 class Update(models.Model):
     posted_by = models.ForeignKey(AuthorizedAccount)
