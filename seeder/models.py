@@ -37,7 +37,7 @@ class Seeder(models.Model):
         super(Seeder, self).save(*args, **kwargs)
 
     def set_expires_on_in_days(self, days):
-        self.expires_on = datetime.fromtimestamp(time() + (SECONDS_IN_A_DAY * days))
+        self.expires_on = datetime.fromtimestamp(time() + (SECONDS_IN_A_DAY * int(days)))
 
 class Token(models.Model):
     seeder = models.ForeignKey(Seeder)

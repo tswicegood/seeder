@@ -182,3 +182,11 @@ class TestOfSeeder(TestCase):
 
         self.assertEquals(seeder.expires_on.date(), datetime.fromtimestamp(time.time() + 60*60*24*7).date(),
             "seeder.expires_on should be 7 days in the future")
+
+    def test_can_take_a_string_as_parameter(self):
+        seeder = generate_random_seeder()
+        try:
+            seeder.set_expires_on_in_days("7")
+        except TypeError:
+            self.fail("seeder.set_expires_on_in_days() unable to handle a string")
+
