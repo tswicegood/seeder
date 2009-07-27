@@ -28,6 +28,9 @@ def generate_random_update(account = None):
     )
 
 class TestCase(DjangoTestCase):
+    def assertPubDateBetween(self, obj, begin, end):
+        self.assertTrue(obj.pub_date > begin and obj.pub_date < end)
+
     def tearDown(self):
         models = (AuthorizedAccount, Token, Seeder, Update, SeededUpdate,)
         for model in models:
@@ -107,7 +110,7 @@ class TestOfUpdate(TestCase):
 
         self.assertEqual(10, len(SeededUpdate.objects.all()))
 
-    def test_all_seeded_updates_have_random_pub_dates(self):
+    def test_all_seeded_updates_have_pub_dates_between_1_and_30_minutes(self):
         a = generate_random_authorized_account()
         generate_random_seeder(a)
 
@@ -117,6 +120,13 @@ class TestOfUpdate(TestCase):
         )
 
         seeded_update = SeededUpdate.objects.get(update = update)
+
+        # only uses 59 seconds to avoid possible race condition where
+        # more than a second elapses between creation and the time this
+        # test runs
+        begin_datetime = datetime.fromtimestamp(time.time() + 59)
+        end_datetime = datetime.fromtimestamp(time.time() + (60 * 30) + 1)
+        self.assertPubDateBetween(seeded_update, begin_datetime, end_datetime)
 
 class TestOfAuthorizedAccount(TestCase):
     def test_at_water_returns_erins_account(self):
