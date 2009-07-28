@@ -6,6 +6,7 @@ from random import randint as random
 from datetime import datetime
 import time
 import mox
+import re
 
 def generate_random_authorized_account():
     u = User(username = "foo" + str(random(10000, 99999)))
@@ -18,6 +19,15 @@ def generate_random_seeder(account = None):
     return Seeder.objects.create(
         twitter_id = random(1000, 9999),
         authorized_for = account
+    )
+
+def generate_random_token(seeder = None):
+    if seeder is None:
+        seeder = generate_random_seeder()
+    return Token.objects.create(
+        seeder = seeder,
+        oauth_token = "some token" + str(random(10, 100)),
+        oauth_token_secret = "some token secret" + str(random(10, 100))
     )
 
 def generate_random_update(account = None):
@@ -216,16 +226,123 @@ class TestOfSeeder(TestCase):
             self.fail("seeder.set_expires_on_in_days() unable to handle a string")
 
 
+def generate_mock_settings():
+    return mox.MockObject(settings)
+
+class StubTwitterApi(object):
+    number_of_calls = 0
+    calls = []
+    def __init__(self, *args, **kwargs):
+        StubTwitterApi.number_of_calls += 1
+
+    def __getattribute__(self, method):
+        StubTwitterApi.calls.append(method)
+        return self
+
+    def __call__(self, *args, **kwargs):
+        last_call = StubTwitterApi.calls.pop()
+        StubTwitterApi.calls.append({
+            "name": last_call,
+            "args": args,
+            "kwargs": kwargs,
+        })
+
+
+class SanityTestOfStubTwitterApi(TestCase):
+    def setUp(self):
+        super(SanityTestOfStubTwitterApi, self).setUp()
+        StubTwitterApi.number_of_calls = 0
+
+    def test_sanity_check(self):
+        obj1 = StubTwitterApi()
+        self.assertEqual(StubTwitterApi.number_of_calls, 1)
+        obj2 = StubTwitterApi()
+        self.assertEqual(StubTwitterApi.number_of_calls, 2)
+        obj3 = StubTwitterApi()
+        self.assertEqual(StubTwitterApi.number_of_calls, 3)
+
+    def test_keeps_track_of_calls(self):
+        obj = StubTwitterApi()
+        obj.foobar()
+        self.assertEqual(len(StubTwitterApi.calls), 1)
+
+    def test_keeps_track_of_parameters_passed_in_to_methods(self):
+        obj = StubTwitterApi()
+        number = random(10, 100)
+        obj.foobar(number)
+
+        data = StubTwitterApi.calls.pop()
+        self.assertEquals(data['args'], (number,))
+
+def generate_full_update(number_of_seeders):
+    account = generate_random_authorized_account()
+    [generate_random_token(generate_random_seeder(account)) for i in range(number_of_seeders)]
+    update = generate_random_update(account)
+    return update
+
+class StubSettingsForTwitterApi(object):
+    TWITTER = {
+        "CONSUMER_KEY": "foobar",
+        "CONSUMER_SECRET": "barfoo",
+    }
+
+
 class TestOfTwitterPoster(TestCase):
-    def test_adds_prefix_if_configured(self):
-        self.fail("incomplete")
+    def setUp(self):
+        super(TestOfTwitterPoster, self).setUp()
+        StubTwitterApi.number_of_calls = 0
+        StubTwitterApi.calls = []
+
+    def test_encapsulates_post_in_template_string(self):
+        settings = StubSettingsForTwitterApi()
+        random_prefix = "random %d" % random(10, 100)
+        settings.TWITTER["POST_TEMPLATE"] = "%s: %%s" % random_prefix
+
+        u = generate_full_update(1)
+        poster = TwitterPoster(api_class = StubTwitterApi, settings = settings)
+        poster.post(u.seededupdate_set.all()[0])
+
+        for data in StubTwitterApi.calls:
+            if data['name'] == 'PostUpdate':
+                break
+        (posted_status,) = data['args']
+        expected_status = "%s: .*" % random_prefix
+        self.assertTrue(
+            re.compile(expected_status).match(posted_status) is not None
+        )
+
 
     def test_instantiates_new_api_class_for_each_token(self):
-        self.fail("incomplete")
+        number_of_seeders = random(2, 10)
+        u = generate_full_update(number_of_seeders)
+        
+        poster = TwitterPoster(api_class = StubTwitterApi)
+        [seeded_update.send(poster) for seeded_update in u.seededupdate_set.all()]
+
+        self.assertEquals(StubTwitterApi.number_of_calls, number_of_seeders)
+
+    def assertSetSourceCalledWith(self, value):
+        for data in StubTwitterApi.calls:
+            if data["name"] == "SetSource":
+                break
+        self.assertEquals((value,), data["args"])
+
 
     def test_sets_source_to_seeder_if_not_configured(self):
-        self.fail("incomplete")
+        u = generate_full_update(1)
+        poster = TwitterPoster(api_class = StubTwitterApi)
+        poster.post(u.seededupdate_set.all()[0])
+
+        self.assertSetSourceCalledWith("seeder")
 
     def test_sets_source_to_configured_value(self):
-        self.fail("incomplete")
+        settings = StubSettingsForTwitterApi()
+        random_source = "random value: " + str(random(10, 100))
+        settings.TWITTER["SOURCE"] = random_source
+
+        u = generate_full_update(1)
+        poster = TwitterPoster(api_class = StubTwitterApi, settings = settings)
+        poster.post(u.seededupdate_set.all()[0])
+
+        self.assertSetSourceCalledWith(random_source)
 
