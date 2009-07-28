@@ -215,3 +215,17 @@ class TestOfSeeder(TestCase):
         except TypeError:
             self.fail("seeder.set_expires_on_in_days() unable to handle a string")
 
+
+class TestOfTwitterPoster(TestCase):
+    def test_adds_prefix_if_configured(self):
+        self.fail("incomplete")
+
+    def test_instantiates_new_api_class_for_each_token(self):
+        self.fail("incomplete")
+
+    def test_sets_source_to_seeder_if_not_configured(self):
+        self.fail("incomplete")
+
+    def test_sets_source_to_configured_value(self):
+        self.fail("incomplete")
+
