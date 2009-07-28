@@ -10,7 +10,7 @@ def index(request):
         'seeder/index.html'
     )
 
-def signup(request):
+def signup(request, *args, **kwargs):
     if request.method == 'POST':
         oauth = OAuthApi(settings.TWITTER['CONSUMER_KEY'], settings.TWITTER['CONSUMER_SECRET'])
         request_token = oauth.getRequestToken()
