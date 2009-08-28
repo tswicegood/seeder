@@ -10,14 +10,17 @@ def index(request):
         'seeder/index.html'
     )
 
+def _do_redirect(request):
+    oauth = OAuthApi(settings.TWITTER['CONSUMER_KEY'], settings.TWITTER['CONSUMER_SECRET'])
+    request_token = oauth.getRequestToken()
+    request.session['duration'] = request.POST['duration']
+    request.session['twitter_request_token'] = request_token
+    authorization_url = oauth.getAuthorizationURL(request_token)
+    return redirect(authorization_url)
+
 def signup(request, *args, **kwargs):
     if request.method == 'POST':
-        oauth = OAuthApi(settings.TWITTER['CONSUMER_KEY'], settings.TWITTER['CONSUMER_SECRET'])
-        request_token = oauth.getRequestToken()
-        request.session['duration'] = request.POST['duration']
-        request.session['twitter_request_token'] = request_token
-        authorization_url = oauth.getAuthorizationURL(request_token)
-        return redirect(authorization_url)
+        return _do_redirect(request)
 
     return render_to_response('seeder/signup.html')
 
