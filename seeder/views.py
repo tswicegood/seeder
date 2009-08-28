@@ -24,7 +24,7 @@ def signup(request, *args, **kwargs):
 
     return render_to_response('seeder/signup.html')
 
-def finish(request):
+def _do_finish(request):
     # TODO: refactor this out -- should be in a util class or on the model
     # TODO: add check for this, redirect if not found
     try:
@@ -53,5 +53,7 @@ def finish(request):
     except HTTPError:
         pass
 
+def finish(request):
+    _do_finish(request)
     return render_to_response('seeder/finish.html')
 
