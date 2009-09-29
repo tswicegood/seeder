@@ -2,8 +2,6 @@ from django import conf
 from oauth import oauth
 import oauthtwitter
 
-# TODO: allow injection of OAuthApi
-# TODO: allow injection of settings
 class TwitterPoster(object):
     def __init__(self, api_class = oauthtwitter.OAuthApi, settings = conf.settings):
         self.api_class = api_class
